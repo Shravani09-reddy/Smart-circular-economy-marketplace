@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoMarket - Sustainable Shopping Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Navigation -->
+        <nav id="navbar" style="display: none;">
+            <div class="nav-container">
+                <h1>🌱 EcoMarket</h1>
+                <div class="nav-links">
+                    <select id="languageSelector" onchange="changeLanguage()">
+                        <option value="en">English</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="hi">हिंदी (Hindi)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                    </select>
+                    <button onclick="showCustomerPage()" class="customer-btn" title="Manage Customers">👥</button>
+                    <button onclick="openBarcodeScanner()" class="scanner-btn-nav" title="Scan Barcode">📷</button>
+                    <button onclick="toggleVoiceAssistant()" class="voice-btn">🎤</button>
+                    <button onclick="toggleChatbot()" class="chat-btn">💬</button>
+                    <span id="userGreeting"></span>
+                    <button onclick="logout()" data-translate="logout">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Auth Pages -->
+        <div id="authPage">
+            <div class="auth-container">
+                <h1>🌱 EcoMarket</h1>
+                <p data-translate="tagline">Sustainable Shopping for a Better Tomorrow</p>
+                
+                <div id="loginForm" class="auth-form">
+                    <h2 data-translate="login">Login</h2>
+                    <input type="email" id="loginEmail" placeholder="Email" data-translate-placeholder="email">
+                    <input type="password" id="loginPassword" placeholder="Password" data-translate-placeholder="password">
+                    <button onclick="login()" data-translate="loginBtn">Login</button>
+                    <p><span data-translate="noAccount">Don't have an account?</span> <a onclick="showRegister()" data-translate="registerLink">Register</a></p>
+                </div>
+
+                <div id="registerForm" class="auth-form" style="display: none;">
+                    <h2 data-translate="register">Register</h2>
+                    <input type="text" id="regName" placeholder="Full Name" data-translate-placeholder="fullName">
+                    <input type="email" id="regEmail" placeholder="Email" data-translate-placeholder="email">
+                    <input type="password" id="regPassword" placeholder="Password" data-translate-placeholder="password">
+                    <input type="tel" id="regPhone" placeholder="Phone Number" data-translate-placeholder="phone">
+                    <textarea id="regAddress" placeholder="Address" data-translate-placeholder="address"></textarea>
+                    <button onclick="register()" data-translate="registerBtn">Register</button>
+                    <p><span data-translate="haveAccount">Already have an account?</span> <a onclick="showLogin()" data-translate="loginLink">Login</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role Selection -->
+        <div id="roleSelection" style="display: none;">
+            <div class="role-container">
+                <h2 data-translate="selectRole">Select Your Role</h2>
+                <div class="role-cards">
+                    <div class="role-card" onclick="selectRole('buyer')">
+                        <div class="role-icon">🛒</div>
+                        <h3 data-translate="buyer">Buyer</h3>
+                        <p data-translate="buyerDesc">Browse and purchase products</p>
+                    </div>
+                    <div class="role-card" onclick="selectRole('seller')">
+                        <div class="role-icon">🏪</div>
+                        <h3 data-translate="seller">Seller</h3>
+                        <p data-translate="sellerDesc">List and sell your products</p>
+                    </div>
+                    <div class="role-card" onclick="selectRole('renter')">
+                        <div class="role-icon">🔄</div>
+                        <h3 data-translate="renter">Renter</h3>
+                        <p data-translate="renterDesc">Rent products temporarily</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buyer Page -->
+        <div id="buyerPage" style="display: none;">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search products..." data-translate-placeholder="searchProducts" oninput="searchProducts()">
+                <select id="categoryFilter" onchange="filterByCategory()">
+                    <option value="all" data-translate="allCategories">All Categories</option>
+                    <option value="plastic">Plastic</option>
+                    <option value="wood">Wood</option>
+                    <option value="steel">Steel</option>
+                    <option value="electric">Electric</option>
+                    <option value="bamboo">Bamboo</option>
+                    <option value="metals">Metals</option>
+                </select>
+                <button onclick="viewCart()" class="cart-btn">🛒 <span id="cartCount">0</span></button>
+            </div>
+            <div id="productGrid" class="product-grid"></div>
+        </div>
+
+        <!-- Seller Page -->
+        <div id="sellerPage" style="display: none;">
+            <div class="seller-container">
+                <h2 data-translate="addProduct">Add New Product</h2>
+                <form id="productForm" class="product-form">
+                    <input type="text" id="productName" placeholder="Product Name" data-translate-placeholder="productName" required>
+                    <textarea id="productDesc" placeholder="Product Description" data-translate-placeholder="productDesc" required></textarea>
+                    <input type="number" id="productPrice" placeholder="Price (₹)" data-translate-placeholder="price" required>
+                    <select id="productCategory" required>
+                        <option value="" data-translate="selectCategory">Select Category</option>
+                        <option value="plastic">Plastic</option>
+                        <option value="wood">Wood</option>
+                        <option value="steel">Steel</option>
+                        <option value="electric">Electric</option>
+                        <option value="bamboo">Bamboo</option>
+                        <option value="metals">Metals</option>
+                    </select>
+                    <input type="file" id="productImage" accept="image/*" required>
+                    <input type="number" id="ecoRating" placeholder="Eco Rating (1-5)" min="1" max="5" required>
+                    <input type="number" id="carbonFootprint" placeholder="Carbon Footprint (kg CO2)" step="0.01" required>
+                    <input type="text" id="manufacturer" placeholder="Manufacturer" data-translate-placeholder="manufacturer" required>
+                    <input type="text" id="manufacturerLocation" placeholder="Manufacturing Location" data-translate-placeholder="manufacturerLocation" required>
+                    <input type="date" id="manufactureDate" required>
+                    <input type="date" id="expiryDate">
+                    <textarea id="usageInstructions" placeholder="Usage Instructions" data-translate-placeholder="usageInstructions"></textarea>
+                    <textarea id="recyclingInfo" placeholder="Recycling Information" data-translate-placeholder="recyclingInfo"></textarea>
+                    <label><input type="checkbox" id="forRent"> <span data-translate="availableForRent">Available for Rent</span></label>
+                    <input type="number" id="rentPrice" placeholder="Rent Price per day (₹)" data-translate-placeholder="rentPrice" style="display:none;">
+                    <button type="submit" data-translate="addProductBtn">Add Product</button>
+                </form>
+                <div id="sellerProducts">
+                    <h3 data-translate="yourProducts">Your Products</h3>
+                    <div id="sellerProductList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Renter Page -->
+        <div id="renterPage" style="display: none;">
+            <div class="search-bar">
+                <input type="text" id="rentSearchInput" placeholder="Search rental products..." data-translate-placeholder="searchRentProducts" oninput="searchRentProducts()">
+            </div>
+            <div id="rentProductGrid" class="product-grid"></div>
+        </div>
+
+        <!-- Customer Management Page -->
+        <div id="customerPage" style="display: none;">
+            <div class="customer-container">
+                <h2>👥 Customer Management</h2>
+                
+                <div class="customer-search-bar">
+                    <input type="text" id="customerSearch" placeholder="Search customers by name, email, or phone..." oninput="searchCustomers()">
+                    <button onclick="exportCustomers()" class="export-btn">📥 Export</button>
+                </div>
+
+                <div class="customer-form-section">
+                    <h3>Add New Customer</h3>
+                    <form id="customerForm" class="customer-form">
+                        <div class="form-row">
+                            <input type="text" id="customerName" placeholder="Full Name *" required>
+                            <input type="email" id="customerEmail" placeholder="Email *" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="tel" id="customerPhone" placeholder="Phone Number *" required>
+                            <input type="text" id="customerAddress" placeholder="Address">
+                        </div>
+                        <textarea id="customerNotes" placeholder="Notes (optional)" rows="3"></textarea>
+                        <button type="submit" onclick="event.preventDefault(); addCustomer();">Add Customer</button>
+                    </form>
+                </div>
+
+                <div class="customer-list-section">
+                    <h3>Customer List</h3>
+                    <div id="customerList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cart Modal -->
+        <div id="cartModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeCart()">&times;</span>
+                <h2 data-translate="shoppingCart">Shopping Cart</h2>
+                <div id="cartItems"></div>
+                <div class="cart-total">
+                    <h3><span data-translate="total">Total:</span> ₹<span id="cartTotal">0</span></h3>
+                    <button onclick="checkout()" data-translate="checkout">Checkout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Detail Modal -->
+        <div id="productModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeProductModal()">&times;</span>
+                <div id="productDetail"></div>
+            </div>
+        </div>
+
+        <!-- Barcode Scanner Modal -->
+        <div id="scannerModal" class="modal" style="display: none;">
+            <div class="modal-content scanner-content">
+                <span class="close" onclick="closeScannerModal()">&times;</span>
+                <h2 data-translate="scanBarcode">Scan Product Barcode</h2>
+                <div class="scanner-container">
+                    <div class="scanner-options">
+                        <button onclick="startCamera()" class="scanner-btn">📷 <span data-translate="useCamera">Use Camera</span></button>
+                        <button onclick="uploadBarcodeImage()" class="scanner-btn">🖼️ <span data-translate="uploadImage">Upload Image</span></button>
+                        <input type="file" id="barcodeImageInput" accept="image/*" style="display: none;" onchange="processBarcodeImage(event)">
+                    </div>
+                    <div id="cameraContainer" style="display: none;">
+                        <video id="cameraVideo" autoplay playsinline></video>
+                        <canvas id="cameraCanvas" style="display: none;"></canvas>
+                        <button onclick="captureBarcode()" class="capture-btn">📸 <span data-translate="capture">Capture</span></button>
+                        <button onclick="stopCamera()" class="stop-btn">⏹️ <span data-translate="stop">Stop</span></button>
+                    </div>
+                    <div id="scanResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanned Product Info Modal -->
+        <div id="scannedProductModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeScannedProductModal()">&times;</span>
+                <div id="scannedProductInfo"></div>
+            </div>
+        </div>
+
+        <!-- Checkout Modal -->
+        <div id="checkoutModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeCheckout()">&times;</span>
+                <h2 data-translate="checkout">Checkout</h2>
+                <div id="checkoutForm">
+                    <h3 data-translate="deliveryAddress">Delivery Address</h3>
+                    <textarea id="deliveryAddress" data-translate-placeholder="enterAddress"></textarea>
+                    <h3 data-translate="paymentMethod">Payment Method</h3>
+                    <label><input type="radio" name="payment" value="cod" checked> <span data-translate="cod">Cash on Delivery</span></label>
+                    <label><input type="radio" name="payment" value="online"> <span data-translate="onlinePayment">Online Payment</span></label>
+                    <div id="onlinePaymentDetails" style="display: none;">
+                        <input type="text" placeholder="Card Number" data-translate-placeholder="cardNumber">
+                        <input type="text" placeholder="Card Holder Name" data-translate-placeholder="cardHolder">
+                        <input type="text" placeholder="Expiry (MM/YY)" data-translate-placeholder="expiry">
+                        <input type="text" placeholder="CVV" data-translate-placeholder="cvv">
+                    </div>
+                    <button onclick="placeOrder()" data-translate="placeOrder">Place Order</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chatbot -->
+        <div id="chatbot" class="chatbot" style="display: none;">
+            <div class="chatbot-header">
+                <h3 data-translate="chatAssistant">Chat Assistant</h3>
+                <button onclick="toggleChatbot()">✕</button>
+            </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type a message..." data-translate-placeholder="typeMessage" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+
+        <!-- Voice Assistant Indicator -->
+        <div id="voiceIndicator" class="voice-indicator" style="display: none;">
+            <div class="pulse"></div>
+            <p data-translate="listening">Listening...</p>
+        </div>
+
+        <!-- Customer Orders Modal -->
+        <div id="customerOrdersModal" class="modal" style="display: none;">
+            <div class="modal-content large-modal">
+                <span class="close" onclick="closeCustomerOrdersModal()">&times;</span>
+                <div id="customerOrdersContent"></div>
+            </div>
+        </div>
+
+        <!-- Review Modal -->
+        <div id="reviewModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeReviewModal()">&times;</span>
+                <div id="reviewContent"></div>
+            </div>
+        </div>
+
+        <!-- Date Modal -->
+        <div id="dateModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeDateModal()">&times;</span>
+                <div id="dateContent"></div>
+            </div>
+        </div>
+
+        <!-- Customer Feedback Modal -->
+        <div id="customerFeedbackModal" class="modal" style="display: none;">
+            <div class="modal-content large-modal">
+                <span class="close" onclick="closeCustomerFeedbackModal()">&times;</span>
+                <div id="customerFeedbackContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="translations.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
